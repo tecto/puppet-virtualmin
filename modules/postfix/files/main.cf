@@ -1,0 +1,134 @@
+# See /usr/share/postfix/main.cf.dist for a commented, more complete version
+
+smtpd_banner = $myhostname ESMTP $mail_name
+biff = no
+
+# appending .domain is the MUA's job.
+append_dot_mydomain = no
+
+# Uncomment the next line to generate "delayed mail" warnings
+#delay_warning_time = 4h
+
+readme_directory = no
+
+# encryption
+
+smtpd_sasl_auth_enable = yes
+smtpd_sasl_security_options = noanonymous
+broken_sasl_auth_clients = yes
+
+## TLS parameters
+tls_random_source = dev:/dev/urandom
+smtpd_use_tls = yes
+smtpd_tls_cert_file = /etc/ssl/YOURDOMAIN/YOURDOMAIN_COM.crt
+smtpd_tls_key_file = /etc/ssl/YOURDOMAIN/YOURDOMAIN_COM.key
+smtpd_tls_loglevel = 1
+smtpd_tls_session_cache_timeout = 3600s
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+
+smtp_use_tls = yes
+smtp_tls_key_file = /etc/ssl/YOURDOMAIN/YOURDOMAIN_COM.nopw.key
+smtp_tls_cert_file = /etc/ssl/YOURDOMAIN/YOURDOMAIN_COM.crt
+smtp_tls_session_cache_database = btree:/var/spool/postfix/smtp_tls_cache
+smtp_tls_note_starttls_offer = yes
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+# network
+relayhost = 
+mydomain = YOURDOMAIN.COM
+myorigin = $myhostname
+mydestination = $myhostname, localhost.$mydomain, localhost, $myhostname.$mydomain
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+inet_interfaces = all
+
+# delivery
+recipient_delimiter = +
+mailbox_command = /usr/bin/procmail-wrapper -o -a $DOMAIN -d $LOGNAME
+home_mailbox = .maildir/
+allow_percent_hack = no
+
+# size limits
+message_size_limit = 0
+mailbox_limit = 0
+virtual_mailbox_limit = 0
+mailbox_size_limit = 0
+
+# aliases/maps
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+virtual_alias_maps = hash:/etc/postfix/virtual
+sender_bcc_maps = hash:/etc/postfix/bcc
+
+# mailman
+owner_request_special = no
+mailman_destination_recipient_limit = 1
+
+# attack handling
+
+## prevent email address harvesting attacks
+disable_vrfy_command = yes
+unknown_address_reject_code  = 554
+unknown_hostname_reject_code = 554
+unknown_client_reject_code   = 554
+
+## mitigate attacks from zombies and broken clients
+smtpd_error_sleep_time = 5s
+smtpd_soft_error_limit = 10
+smtpd_hard_error_limit = 20
+
+# HELO restrictions
+
+## fix for certain broken (but popular) clients, required to be able to use HELO filtering at all
+smtpd_delay_reject = yes
+
+## reject mail from any system that fails to identify itself 
+smtpd_helo_required = yes
+
+## permit localhost connections, reject connections from hosts that identify 
+## themselves in blatantly incorrect ways, such as “MAILSERVER” and “HOST@192.168 <mailto:HOST@192.168>!aol.com”.
+
+smtpd_helo_restrictions =
+   permit_mynetworks,
+   reject_invalid_hostname,
+   regexp:/etc/postfix/helo.regexp,
+   permit
+
+# Sender restrictions
+
+## permit authenticated or local users, reject malformed or provably nonexistent email addresses
+smtpd_sender_restrictions =
+   permit_sasl_authenticated,
+   permit_mynetworks,
+   reject_non_fqdn_sender,
+   reject_unknown_sender_domain,
+   permit
+
+# Recipient restrictions
+
+## greylisting
+milter_default_action = accept
+milter_protocol = 2
+smtpd_milters = inet:localhost:8891
+non_smtpd_milters = inet:localhost:8891
+
+## recipient restrictions and expensive tests
+unknown_local_recipient_reject_code = 550
+mime_header_checks = regexp:/etc/postfix/mime_header_checks
+smtpd_recipient_restrictions =
+# reject commands sent without waiting for authorization
+   reject_unauth_pipelining,
+# reject mail targeted at domains that do not/cannot exist
+   reject_non_fqdn_recipient,
+   reject_unknown_recipient_domain,
+# accept local mail/authorized users
+   permit_mynetworks,
+   permit_sasl_authenticated,
+# turn off open relaying
+   reject_unauth_destination,
+# SPF
+   # set timeout on spf checking
+   spf-policyd_time_limit = 3600s
+   check_policy_service unix:private/policy-spf
+# spamhaus rbl
+   reject_rbl_client zen.spamhaus.org,
+   permit

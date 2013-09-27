@@ -1,0 +1,2 @@
+deb http://software.virtualmin.com/gpl/debian/ virtualmin-squeeze main
+deb http://software.virtualmin.com/gpl/debian/ virtualmin-universal main

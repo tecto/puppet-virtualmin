@@ -1,0 +1,9 @@
+#!/bin/sh
+
+[ -x /usr/sbin/dovecot ] || exit 0
+
+# Empty Trash folders of mail 7+ days old
+/usr/bin/find /home/ -path '*/homes/*/.maildir/.Trash/cur/*' -mtime +6 -delete
+
+# Empty Junk folders of mail 31+ days old
+/usr/bin/find /home/ -path '*/homes/*/.maildir/.Junk/cur/*' -mtime +30 -delete

@@ -1,0 +1,5 @@
+/^subdomain\.host\.com$/           550 Don't use my own hostname
+/^xxx\.yyy\.zzz\.xxx$/             550 Don't use my own IP address
+/^\[xxx\.yyy\.zzz\.xxx\]$/         550 Don't use my own IP address
+/^[0-9.]+$/                        550 Your software is not RFC 2821 compliant
+/^[0-9]+(\.[0-9]+){3}$/            550 Your software is not RFC 2821 compliant

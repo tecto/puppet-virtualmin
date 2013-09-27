@@ -1,0 +1,2 @@
+deb http://ppa.launchpad.net/mathiaz/puppet-backports/ubuntu lucid main 
+deb-src http://ppa.launchpad.net/mathiaz/puppet-backports/ubuntu lucid main 

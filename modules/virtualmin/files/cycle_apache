@@ -1,0 +1,6 @@
+#!/bin/sh
+/etc/init.d/apache2 stop
+killall -9 /usr/sbin/apache2
+killall -9 /usr/bin/php5-cgi
+killall -9 wget
+/etc/init.d/apache2 start
